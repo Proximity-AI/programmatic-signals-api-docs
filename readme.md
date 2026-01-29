@@ -298,6 +298,22 @@ https://uniquesignals.io/api/
 
 When you send this request you will get the response with job status, and there is one key: `job_id` that is used in the next invocations to retrieve data.
 
+##### Example
+
+First invocation (job initiation).
+
+```json
+{
+  "api_key": "your-api-key-generated-with-uniquesignals",
+  "business_type": "insurance",
+  "service_description": "fire insurance",
+  "lng": -122.4194,
+  "lat": 37.7749,
+  "radius_m": 10000
+}
+```
+
+
 #### Second and next invocations - you have `job_id`
 
 - `api_key`
@@ -309,6 +325,17 @@ When you send this request you will get the response with job status, and there 
 	- **string**
 	- Unique job id that you get in the reponse after the first invocation
 
+##### Example
+
+Next invocations (getting data).
+
+```json
+{
+  "api_key": "your-api-key-generated-with-uniquesignals",
+  "job_id": "b93b1d73-ee50-43db-b0e3-b57d00c820f4"
+}
+```
+
 ### Requests flow
 
 1. Send request with parameters described in the first invocation.
@@ -319,3 +346,51 @@ When you send this request you will get the response with job status, and there 
 
 ### API response
 
+- `job_id`: **string** - unique identifier of the process, it is required to retrieve data, you must use it in the 2nd and next requests
+- `organization_id`: **string** - your organization's unique identifier, you might use it for technical and operational support along with the `job_id`
+`job_status`: **string** - could be: completed, pending, running, error, test, unknown. After the first request `job_status` will be `running`, and when your data is ready then `job_status` will be `completed`. Any other status means that something might be wrong with the request.
+- `started_at`: **string** - timestamp in UTC time zone, when job has started
+- `completed_at`: **string** - timestamp in UTC, when job has ended (data is ready), if it is `none` and `job_status` is `running` then your data is processed
+- `error_message`: **string** - when `job_status` is `error` then this message points out why there is an error
+- `url`: **string** - after job is completed you will get a url valid for 60 seconds from where you can download preapred JSON with data
+- `estimated_processing_time`: EXPERIMENTAL **int** - time in seconds when data will be ready, right now it is experimental feature, and 30 seconds is close to the worst case scenario
+- `n_records`: **int** - number of retrieved businesses
+- `n_signals`: **int** - number of retrieved signals
+- `total_token_count`: **int** - number of used tokens
+
+#### Example - job initiation
+
+```json
+{
+  "job_id": "b93b1d73-ee50-43db-b0e3-b57d00c820f4",
+  "job_status": "running",
+  "organization_id": "unique-id-of-your-organization",
+  "error_message": null,
+  "started_at": "2026-01-28T07:48:39.756001+00:00",
+  "completed_at": null,
+  "url": null,
+  "estimated_processing_time_s": 30,
+  "n_records": 0,
+  "n_signals": 0,
+  "total_token_count": null
+}
+
+```
+
+#### Example - getting data
+
+```json
+{
+  "job_id": "b93b1d73-ee50-43db-b0e3-b57d00c820f4",
+  "job_status": "completed",
+  "organization_id": "unique-id-of-your-organization",
+  "error_message": null,
+  "started_at": "2026-01-28T07:48:39.756001+00:00",
+  "completed_at": "2026-01-28T07:49:25.481307+00:00",
+  "url": "https://.../signals/b93b1d73-ee50-43db-b0e3-b57d00c820f4.json?...&Expires=1769586634",
+  "estimated_processing_time_s": 30,
+  "n_records": 159,
+  "n_signals": 471,
+  "total_token_count": 63991
+}
+```
