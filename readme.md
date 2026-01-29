@@ -176,3 +176,83 @@ wget "https://.../signals/b93b1d73-ee50-43db-b0e3-b57d00c820f4.json?...&Expires=
 
 ### Using Python
 
+**Note**: soon `uniquesignals.io` will have dedicated Python client!
+
+When using Python it is easier to automate data retrieval. Below you have a full script that is using `requests` package and `uniquesignals.io` api.
+
+```python
+import os
+import time
+
+import requests
+
+
+BUSINESS_TYPE = 'insurance'
+LAT = 34.05223
+LNG = -118.24368
+RADIUS_M = 10000
+SERVICE_DESCRIPTION = 'fire insurance'
+API_KEY = os.getenv('UNIQUE_SIGNALS_API_KEY')
+
+PAYLOAD = {
+    'api_key': API_KEY,
+    'business_type': BUSINESS_TYPE,
+    'service_description': SERVICE_DESCRIPTION,
+    'lng': LNG,
+    'lat': LAT,
+    'radius_m': RADIUS_M
+}
+
+
+def load_signals(payload: dict):
+    """
+    Function loads signals and businesses from unique signals API.
+
+    :return:
+    :rtype:
+    """
+    status = requests.post(
+        url='https://uniquesignals.io/api/get-signals',
+        headers={
+            "Content-Type": "application/json"
+        },
+        json=payload
+    )
+
+    data = status.json()
+
+    return data
+
+
+ds = load_signals(PAYLOAD)
+
+try:
+    job_id = ds['job_id']
+    PAYLOAD['job_id'] = job_id
+except KeyError as ke:
+    print("No job_id found, process is terminated")
+    raise ke
+
+
+counter = 0
+while True:
+    ds = load_signals(PAYLOAD)
+
+    if ds['job_status'] == 'completed':
+        break
+    elif ds['job_status'] == 'error':
+        raise RuntimeError(ds['error_message'])
+    else:
+        if counter == 12:
+            raise TimeoutError('Cannot establish connection to UniqueSignals API')
+        counter += 1
+        time.sleep(10)
+
+print('Downloading data')
+data_url = ds['url']
+
+with open('output.json', 'wb') as out_file:
+    content = requests.get(data_url, stream=True).content
+    out_file.write(content)
+
+```
