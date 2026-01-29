@@ -16,7 +16,7 @@ To get access to the programmatic API od the `uniquesignals` system you must:
 #### 1. Initiate processing
 
 ```bash
-curl -X POST "https://api.uniquesignals.ai/get-signals" \
+curl -X POST "https://uniquesignals.io/api/get-signals" \
   -H "Content-Type: application/json" \
   -d '{
     "api_key": "your-api-key-generated-with-uniquesignals",
@@ -52,7 +52,7 @@ You will get the following response:
 After around 30 seconds you can query again the same endpoint, but this time using returned `job_id` parameter. If job is completed you will get a link valid for 60 seconds from where you can initiate download:
 
 ```bash
-curl -X POST "https://api.uniquesignals.ai/get-signals" \
+curl -X POST "https://uniquesignals.io/api/get-signals" \
   -H "Content-Type: application/json" \
   -d '{
     "api_key": "your-api-key-generated-with-uniquesignals",
@@ -256,3 +256,66 @@ with open('output.json', 'wb') as out_file:
     out_file.write(content)
 
 ```
+
+## Request structure
+
+### URL
+
+https://uniquesignals.io/api/
+
+### Payload parameters
+
+#### First invocation - you don't have `job_id` yet
+
+- `api_key`
+	- REQUIRED
+	- **string**
+	- API Key generated through uniquesignals.ai admin panel
+- `lng`
+	- REQUIRED
+	- **numerical**
+	- longitude where to search for the customers
+- `lat`
+	- REQUIRED
+	- **numerical**
+	- latitude where to search for the customers
+- `radius_m`
+	- REQUIRED
+	- **numerical**
+	- radius within the search is performed in meters, maximum radius is 10 kilometers (10 000 meters)
+- `business_type`
+	- OPTIONAL, must be provided along with `service_description`, when not provided you must use `icp_description` instead
+	- **string**
+	- description of your business, should be short: insurance broker, construction company, retailer, brewery
+- `service_description`
+	- OPTIONAL, must be provided along with `business_type`, when not provided you must use `icp_description` instead
+	- **string**
+	- description of your services, could be longer and specific: fire insurance for restaurants, design and construction of warehouses and data centers, small shop with fresh vegetables, non-alcoholic beers and wines
+- `icp_description`
+	- OPTIONAL, when not provided you must use `business_type` and `service_description` instead
+	- **string**
+	- description of your ICP (Ideal Customer Profile) or just the customer type, for example: restaurants, data center and computing services, chefs, event agencies
+
+When you send this request you will get the response with job status, and there is one key: `job_id` that is used in the next invocations to retrieve data.
+
+#### Second and next invocations - you have `job_id`
+
+- `api_key`
+	- REQUIRED
+	- **string**
+	- API Key generated through uniquesignals.ai admin panel
+- `job_id`
+	- REQUIRED
+	- **string**
+	- Unique job id that you get in the reponse after the first invocation
+
+### Requests flow
+
+1. Send request with parameters described in the first invocation.
+2. You will get the response with `job_id` parameter.
+3. Use `job_id` to send next requests to check if data is ready (to the same endpoint).
+
+## Response structure
+
+### API response
+
