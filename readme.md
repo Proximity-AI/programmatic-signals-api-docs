@@ -1,5 +1,21 @@
 # UniqueSignals - programmatic access API docs
 
+## Comparison to Google Places
+
+| Feature | Google Places | Unique Signals |
+|---------|---------------|----------------|
+| List of businesses | yes | yes |
+| Businesses unavailable on Google Maps | no | yes (\*) |
+| Query using text - you know the ICP | yes | yes |
+| Query based on your business category and your services - you don't know who your customer might be | no | yes |
+| Basic address data | yes | yes |
+| Emails | rare | yes - you can enrich data with emails (\**) |
+| Neighborhood signals that might be used for the cold outreach | no | yes |
+| Reasoning why does a signal is relevant for your potential customer | no | yes |
+
+- (\*) - will be introduced soon
+- (\**) - parameter allowing email enrichment will be unlocked in coming weeks
+
 ## Access to `uniquesignals` API
 
 To get access to the programmatic API od the `uniquesignals` system you must:
