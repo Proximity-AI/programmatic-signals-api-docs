@@ -519,4 +519,9 @@ Next invocations (getting data).
 }
 ```
 
+## Common issues
 
+### No Places Error
+
+- `error_message`: *No POIs found for the offered services! Set the bigger radius, or change the location.*
+- solution: change the `lat`, `lng` location - probably there are no businesses of a concrete type in the area; sometimes you may increase the `radius_m` parameter. Do not go below 1000 meters. You may always use the biggest possible radius (10000 meters).
