@@ -394,3 +394,129 @@ Next invocations (getting data).
   "total_token_count": 63991
 }
 ```
+
+## Output data structure
+
+### Type
+
+- JSON
+
+### Fields
+
+- `job_id`: **string** - unique identifier of the process, the same that you get through the API respones
+- `recommendation_score`: **int** - final recommendation score, within limits [1-10]
+- `businesses_no_signals`: **list[string]** - list of business identifiers (keys) without any signals
+- `businesses`: **dict[string]**
+	- `biz_{i}`: **string** - i-th business, used as the unique ID to link businesses to signals
+		- `address`: **string** - i-th business address
+		- `name`: **string** - i-th business name
+		- `website`: **string** - i-th business website URL
+		- `phone`: **string** - i-th business phone number (local for each country)
+		- `email`: **string** - i-th business email, not always provided
+		- `uq_reasoning`: **string** - why this customer's bsuiness category might be important for your sales representative
+		- `signal_ids`: **list[string]** - array with unique ids of signals related to the business
+- `signals`: **dict[string]**
+	- `{signal id}`: **string** - unique ID of a signal
+		- `signal_type`: **string** - classification of the signal
+		- `address`: **string** - when signal can be pointed to the specific address then it is provided
+		- `city`: **string**
+		- `state`: **string**
+		- `description`: **string** - human-readable description of the signal
+		- `event_time`: **string** - local time in the format *YYYY-MM-DDTHH:MM:SS.Z*
+		- `reasoning`: **string** - why signal impacts given businesses from the `business_ids` list
+		- `signal_metadata`: **dict** - additional metadata, different for different signal types
+			- `signal_class`: **string** - a common field in Signal Metadata objects that describes Proximity signal class (hardcoded into the data models)
+			- *other fields*, depending on the signal class
+		- `business_ids`: **list[string]** - unique ids of businesses related to the signal
+
+### Example
+
+```json
+{
+  "businesses": {
+    "biz_0": {
+      "address": "SOUTH, 320 Wall St F, Los Angeles, CA 90013",
+      "name": "MJ Wholesale",
+      "website": null,
+      "phone": "(213) 670-7652",
+      "email": null,
+      "uq_reasoning": "Businesses that hold large inventories of goods in warehouses are highly susceptible to fire. Wholesale trade entities need to protect their stock and facilities.",
+      "signal_ids": [
+        "hazmat#la_fire_INC1982_2f84e20a"
+      ]
+    },
+    "biz_1": {
+      "address": "340 San Pedro St # G, Los Angeles, CA 90013",
+      "name": "ABC Wholesale Merchandise",
+      "website": null,
+      "phone": "(213) 687-6505",
+      "email": null,
+      "uq_reasoning": "Businesses that hold large inventories of goods in warehouses are highly susceptible to fire. Wholesale trade entities need to protect their stock and facilities.",
+      "signal_ids": [
+        "hazmat#la_fire_INC1982_2f84e20a"
+      ]
+    },
+    ...  },
+  "signals": {
+    "hazmat#la_fire_INC1982_2f84e20a": {
+      "signal_type": "fire_emergency",
+      "address": null,
+      "city": "Los Angeles",
+      "state": "CA",
+      "description": "Lafd hazmat is investigating light smoke emanating from a shipping container. The container is not on a vessel.",
+      "event_time": "2026-01-15T00:38:00.000000",
+      "reasoning": "Wholesale trade: Negative impact from disruption of supply chains and inability to transport or store contaminated goods. Positive impact for wholesalers of hazmat response equipment and cleanup supplies.",
+      "signal_metadata": {
+        "signal_class": "public safety",
+        "signal_group": null,
+        "severity": "medium",
+        "neighborhood": "1982",
+        "district": null,
+        "zipcode": null,
+        "jurisdiction": "Los Angeles Fire Department",
+        "title": null
+      },
+      "business_ids": [
+        "biz_0",
+        "biz_81",
+        "biz_82",
+        "biz_83",
+        "biz_84"
+      ]
+    },
+    "vvG1iZbwpOndBI": {
+      "signal_type": "live events",
+      "address": "5151 State University Drive",
+      "city": "Los Angeles",
+      "state": "California",
+      "description": "Music event: Chiquis. Event genre: Latin. Event class: Latin.",
+      "event_time": "2026-03-08T03:00:00Z",
+      "reasoning": "Wholesale trade: Positive impact due to increased demand for related merchandise (e.g., merchandise, costumes, decorations) before and after the event, though the primary impact is on retail.",
+      "signal_metadata": {
+        "signal_class": "live events",
+        "genre": "Latin",
+        "segment": "Music",
+        "sub_genre": "Latin",
+        "venues_name": "Luckman Fine Arts Complex",
+        "event_name": "Chiquis"
+      },
+      "business_ids": [
+        "biz_3",
+        "biz_4",
+        "biz_5",
+        "biz_6",
+        "biz_7",
+        "biz_8",
+        "biz_11",
+        "biz_12",
+        "biz_85"
+      ]
+    },
+    ...  },
+  "business_no_signals": [],
+  "job_id": "b93b1d73-ee50-43db-b0e3-b57d00c820f497136f8e-6f37-4129-a08e-782302ac2f14",
+  "recommendation_score": 7
+}
+```
+
+
