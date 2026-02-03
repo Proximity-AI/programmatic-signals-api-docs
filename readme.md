@@ -17,7 +17,7 @@ Welcome to documentation of `uniquesignals.io` API.
 | E-mail enrichment | yes - limited to the web service | yes | yes |
 | Number of signals | 1 signal type / POI | 1 signal type / POI | 1 or more signal types / POI |
 
-Enterprise partnership is limited to the selected organizations, and ends with separate contract agreement and API access endpoints. Would you like to know more? Please contact us: [here](kornel@useproximity.ai)
+Enterprise partnership is limited to the selected organizations, and ends with separate contract agreement and API access endpoints. Would you like to know more? Please contact us: [here](billing@useproximity.ai)
 
 ## Comparison to Google Places
 
@@ -43,12 +43,15 @@ To get access to the programmatic API od the `uniquesignals` system you must:
 
 1. Register your organization on [Unique Signals Portal](https://uniquesignals.ai/auth/signup)
 2. Upgrade to the [PRO Plan](https://uniquesignals.ai/pricing)
-3. Request API Key from our team: [todo]
+3. Request API Key:
+  - Go into your [Admin Panel](https://uniquesignals.ai/admin)
+  - Select API Keys
+  - Create `New API Key` and copy it - it won't be visible later!
 4. Start using the system!
 
 ### Enterprise
 
-Please, contact our [support](kornel@useproximity.ai)
+Please, contact our [support](billing@useproximity.ai)
 
 ## Example API usage
 
