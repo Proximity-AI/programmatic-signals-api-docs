@@ -16,6 +16,7 @@ Welcome to documentation of `uniquesignals.io` API.
 | API requests per month | 0 | 100 | custom |
 | E-mail enrichment | yes - limited to the web service | yes | yes |
 | Number of signals | 1 signal type / POI | 1 signal type / POI | 1 or more signal types / POI |
+| People API - know who is related to the business | no | yes | yes |
 
 Enterprise partnership is limited to the selected organizations, and ends with separate contract agreement and API access endpoints. Would you like to know more? Please contact us: [here](billing@useproximity.ai)
 
@@ -24,16 +25,16 @@ Enterprise partnership is limited to the selected organizations, and ends with s
 | Feature | Google Places | Unique Signals |
 |---------|---------------|----------------|
 | List of businesses | yes | yes |
-| Businesses unavailable on Google Maps | no | yes (\*) |
+| People related to the business | no | yes |
+| Businesses unavailable on Google Maps | no | yes |
 | Query using text - you know the ICP | yes | yes |
 | Query based on your business category and your services - you don't know who your customer might be | no | yes |
 | Basic address data | yes | yes |
-| Emails | rare | yes - you can enrich data with emails (\**) |
+| Emails | rare | yes - you can enrich data with emails (\*) |
 | Neighborhood signals that might be used for the cold outreach | no | yes |
 | Reasoning why does a signal is relevant for your potential customer | no | yes |
 
-- (\*) - will be introduced soon
-- (\**) - parameter allowing email enrichment will be unlocked in coming weeks
+- (\*) - email enrichment is provided by default when querying `get-people` API endpoint
 
 ## Access to `uniquesignals` API
 
@@ -55,9 +56,11 @@ Please, contact our [support](billing@useproximity.ai)
 
 ## Example API usage
 
-### Using CURL
+### Get signals and businesses
 
-#### 1. Initiate processing
+#### Using CURL
+
+##### 1. Initiate processing
 
 ```bash
 curl -X POST "https://uniquesignals.io/api/get-signals" \
@@ -91,7 +94,7 @@ You will get the following response:
 
 ```
 
-#### 2. Get link to the data
+##### 2. Get link to the data
 
 After around 30 seconds you can query again the same endpoint, but this time using returned `job_id` parameter. If job is completed you will get a link valid for 60 seconds from where you can initiate download:
 
@@ -122,7 +125,7 @@ And then you get the final response with the link:
 }
 ```
 
-#### 3. Download data
+##### 3. Download data
 
 Use this link to download the data:
 
@@ -218,7 +221,7 @@ wget "https://.../signals/b93b1d73-ee50-43db-b0e3-b57d00c820f4.json?...&Expires=
 }
 ```
 
-### Using Python
+#### Using Python
 
 **Note**: soon `uniquesignals.io` will have dedicated Python client!
 
@@ -281,6 +284,190 @@ except KeyError as ke:
 counter = 0
 while True:
     ds = load_signals(PAYLOAD)
+
+    if ds['job_status'] == 'completed':
+        break
+    elif ds['job_status'] == 'error':
+        raise RuntimeError(ds['error_message'])
+    else:
+        if counter == 12:
+            raise TimeoutError('Cannot establish connection to UniqueSignals API')
+        counter += 1
+        time.sleep(10)
+
+print('Downloading data')
+data_url = ds['url']
+
+with open('output.json', 'wb') as out_file:
+    content = requests.get(data_url, stream=True).content
+    out_file.write(content)
+
+```
+
+### Get people
+
+#### Using CURL
+
+##### 1. Initiate processing
+
+```bash
+curl -X POST "https://uniquesignals.io/api/get-people" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "api_key": "your-api-key-generated-with-uniquesignals",
+    "prompt": "Leisure activities and services around those in Miami, Florida"
+  }'
+```
+
+You will get the following response:
+
+```json
+{
+  "job_id": "b758371c-32af-4f4d-b477-758fb40e8f97",
+  "job_status": "running",
+  "organization_id": "050e35f6-",
+  "error_message": None,
+  "started_at": "2026-03-13T10:11:17.666026+00:00",
+  "completed_at": none,
+  "url": none,
+  "estimated_processing_time_s": 30,
+  "n_records": 0,
+  "n_emails": 0,
+  "n_people": 0,
+  "total_token_count": 0
+}
+
+
+```
+
+##### 2. Get link to the data
+
+After around 30 seconds you can query again the same endpoint, but this time using returned `job_id` parameter. If job is `completed` you will get a link valid for 60 seconds from where you can initiate download:
+
+```bash
+curl -X POST "https://uniquesignals.io/api/get-signals" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "api_key": "your-api-key-generated-with-uniquesignals",
+    "job_id": "b758371c-32af-4f4d-b477-758fb40e8f97"
+  }'
+```
+
+And then you get the final response with the link:
+
+```json
+{
+  "job_id": "b758371c-32af-4f4d-b477-758fb40e8f97",
+  "job_status": "completed",
+  "organization_id": "050e35f6-",
+  "error_message": none,
+  "started_at": "2026-03-13T10:11:17.666026+00:00",
+  "completed_at": "2026-03-13T10:12:13.680778+00:00",
+  "url": "https://.../b758371c-32af-4f4d-b477-758fb40e8f97.json?AWSAccessKeyId=...",
+  "estimated_processing_time_s": 50,
+  "n_records": 80,
+  "n_emails": 12,
+  "n_people": 121,
+  "total_token_count": 30000
+}
+
+```
+
+##### 3. Download data
+
+Use this link to download the data:
+
+```bash
+wget "https://.../b758371c-32af-4f4d-b477-758fb40e8f97.json?AWSAccessKeyId=..."
+```
+
+```json
+{
+  "job_id": "b758371c-32af-4f4d-b477-758fb40e8f97",
+  "leads": [
+    {
+      "address": "1331 Brickell Bay Dr Miami 33131-3610, FL, US",
+      "name": "StepFlix Entertainment",
+      "business_category": "arts_and_entertainment",
+      "operating_status": "open",
+      "other_addresses": [],
+      "other_phones": [],
+      "other_websites": [],
+      "phone": "+18564773549",
+      "website": "https://www.stepflixentertainment.com/",
+      "emails": [],
+      "people": [
+        {
+          "id": "672773e8-ba24-4ded-a666-445097ed9978",
+          "first_name": "Emily",
+          "last_name": "Yero",
+          "phone": null,
+          "attributes": {
+            "title": "CEO",
+            "total_score": 0.545
+          }
+        }
+      ]
+    },
+  ]
+}
+```
+
+#### Using Python
+
+**Note**: soon `uniquesignals.io` will have dedicated Python client!
+
+When using Python it is easier to automate data retrieval. Below you have a full script that is using `requests` package and `uniquesignals.io` api.
+
+```python
+import os
+import time
+
+import requests
+
+
+PROMPT = 'Leisure activities and services around those in Miami, Florida'
+API_KEY = os.getenv('UNIQUE_SIGNALS_API_KEY')
+
+PAYLOAD = {
+    'api_key': API_KEY,
+    'prompt': PROMPT
+}
+
+
+def load_people(payload: dict):
+    """
+    Function loads people and businesses from unique signals API.
+
+    :return:
+    :rtype:
+    """
+    status = requests.post(
+        url='https://uniquesignals.io/api/get-people',
+        headers={
+            "Content-Type": "application/json"
+        },
+        json=payload
+    )
+
+    data = status.json()
+
+    return data
+
+
+ds = load_people(PAYLOAD)
+
+try:
+    job_id = ds['job_id']
+    PAYLOAD['job_id'] = job_id
+except KeyError as ke:
+    print("No job_id found, process is terminated")
+    raise ke
+
+
+counter = 0
+while True:
+    ds = load_people(PAYLOAD)
 
     if ds['job_status'] == 'completed':
         break
